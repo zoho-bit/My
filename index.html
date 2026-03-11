@@ -1,20 +1,391 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY PANEL 1.0</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HACKER PANEL 1.0</title>
+
+<style>
+
+body{
+font-family:Segoe UI,Arial;
+background:#0f0f17;
+color:#e0e0ff;
+padding:16px;
+max-width:620px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:#00d4ff;
+}
+
+#toggleBtn{
+width:100%;
+padding:16px;
+font-size:19px;
+font-weight:bold;
+background:#00c853;
+color:white;
+border:none;
+border-radius:12px;
+cursor:pointer;
+margin-bottom:16px;
+}
+
+#toggleBtn.off{background:#ff5252;}
+
+#status{
+padding:14px;
+margin-bottom:16px;
+border-radius:10px;
+text-align:center;
+background:#1a1a2e;
+}
+
+#numbers{
+display:flex;
+flex-direction:column;
+gap:14px;
+}
+
+.numbox{
+background:#171725;
+padding:14px;
+border-radius:12px;
+border:1px solid #2a2a4a;
+position:relative;
+}
+
+.numbox.yellow{
+background:#4a4200;
+border-color:#ffd600;
+}
+
+.top-row{
+display:flex;
+gap:12px;
+font-size:19px;
+font-weight:bold;
+}
+
+.phone10{
+flex:1;
+cursor:pointer;
+color:#a5d8ff;
+}
+
+.copy-number-btn,.copy-otp-btn{
+padding:8px 14px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+color:white;
+}
+
+.copy-number-btn{background:#2962ff;}
+.copy-otp-btn{background:#8e24aa;}
+
+.otp-area{
+display:flex;
+gap:12px;
+background:#0d0d1f;
+padding:10px;
+border-radius:8px;
+}
+
+.otp{
+flex:1;
+text-align:center;
+font-size:18px;
+letter-spacing:2px;
+color:#ffeb3b;
+}
+
+.otp.success{
+color:#00e676;
+}
+
+.timer{
+position:absolute;
+top:8px;
+right:12px;
+font-size:13px;
+color:#ff6d00;
+}
+
+</style>
 </head>
+
 <body>
 
-  <h1> MY PANEL 1.0</h1>
+<h1>HACKER PANEL 1.0</h1>
 
-  <button id="toggleBtn">ON Karo</button>
-  <div id="status">Off hai → ON dabao</div>
+<button id="toggleBtn">ON Karo</button>
+<div id="status">Off hai → ON dabao</div>
 
-  <div id="numbers"></div>
+<div id="numbers"></div>
 
-  <script src="script.js"></script>
+<script>
+
+const API="https://sohit.sawanpoint0000.workers.dev";
+
+const SERVICE="swr";
+const COUNTRY="22";
+const MAX_PRICE="80";
+
+const ACTIVE_KEY="active_numbers";
+const SAVED_KEY="saved_numbers";
+
+let activeNumbers=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"[]");
+let savedNumbers=JSON.parse(localStorage.getItem(SAVED_KEY)||"[]");
+
+let isOn=false;
+let interval;
+
+const toggleBtn=document.getElementById("toggleBtn");
+const statusDiv=document.getElementById("status");
+const numbersDiv=document.getElementById("numbers");
+
+function saveStorage(){
+
+localStorage.setItem(ACTIVE_KEY,JSON.stringify(activeNumbers));
+localStorage.setItem(SAVED_KEY,JSON.stringify(savedNumbers));
+
+}
+
+function updateUI(){
+
+toggleBtn.textContent=isOn?"OFF Karo":"ON Karo";
+
+statusDiv.textContent=isOn
+?"Auto buy fast mode..."
+:"Off hai → ON dabao";
+
+}
+
+toggleBtn.onclick=()=>{
+
+isOn=!isOn;
+
+updateUI();
+
+if(isOn) start();
+else clearInterval(interval);
+
+};
+
+function createBox(data,isPermanent=false){
+
+const num=data.phone.slice(2);
+
+const box=document.createElement("div");
+box.className="numbox";
+
+box.innerHTML=`
+
+<div class="top-row">
+
+<div class="phone10">${num}</div>
+
+<button class="copy-number-btn">Copy No.</button>
+
+</div>
+
+<div class="otp-area">
+
+<div class="otp ${data.otp?'success':''}">
+${data.otp||"Waiting for OTP..."}
+</div>
+
+<button class="copy-otp-btn">Copy OTP</button>
+
+</div>
+
+${isPermanent?"":"<div class='timer'>05:00</div>"}
+
+`;
+
+const phone=box.querySelector(".phone10");
+const copyBtn=box.querySelector(".copy-number-btn");
+
+function copy(){
+
+navigator.clipboard.writeText(num);
+
+box.classList.add("yellow");
+
+}
+
+phone.onclick=copy;
+copyBtn.onclick=copy;
+
+if(!isPermanent){
+
+startTimer(box,data.startTime,data.id);
+
+}
+
+if(!data.otp){
+
+startOTP(box,data.id);
+
+}
+
+return box;
+
+}
+
+function startTimer(box,start,id){
+
+const timer=box.querySelector(".timer");
+
+const t=setInterval(()=>{
+
+const elapsed=Math.floor((Date.now()-start)/1000);
+let remain=300-elapsed;
+
+if(remain<=0){
+
+clearInterval(t);
+
+box.remove();
+
+activeNumbers=activeNumbers.filter(x=>x.id!==id);
+
+saveStorage();
+
+return;
+
+}
+
+const m=String(Math.floor(remain/60)).padStart(2,"0");
+const s=String(remain%60).padStart(2,"0");
+
+timer.textContent=`${m}:${s}`;
+
+},1000);
+
+}
+
+function startOTP(box,id){
+
+const otpEl=box.querySelector(".otp");
+
+const poll=setInterval(async()=>{
+
+try{
+
+const q=new URLSearchParams({
+action:"getStatus",
+id
+});
+
+const r=await fetch(API+"?"+q);
+const t=(await r.text()).trim();
+
+if(t.startsWith("STATUS_OK")){
+
+const code=t.split(":")[1];
+
+otpEl.textContent=code;
+otpEl.classList.add("success");
+
+const item=activeNumbers.find(x=>x.id==id);
+
+if(item){
+
+item.otp=code;
+
+savedNumbers.unshift(item);
+
+activeNumbers=activeNumbers.filter(x=>x.id!=id);
+
+saveStorage();
+
+}
+
+clearInterval(poll);
+
+}
+
+}catch{}
+
+},2000);
+
+}
+
+function renderAll(){
+
+numbersDiv.innerHTML="";
+
+savedNumbers.forEach(n=>{
+numbersDiv.appendChild(createBox(n,true));
+});
+
+activeNumbers.forEach(n=>{
+numbersDiv.appendChild(createBox(n,false));
+});
+
+}
+
+async function fetchNumber(){
+
+if(!isOn) return;
+
+try{
+
+const p=new URLSearchParams({
+
+action:"getNumber",
+service:SERVICE,
+country:COUNTRY,
+maxPrice:MAX_PRICE
+
+});
+
+const r=await fetch(API+"?"+p);
+
+const txt=(await r.text()).trim();
+
+if(txt.startsWith("ACCESS_NUMBER")){
+
+const[,id,phone]=txt.split(":");
+
+const item={
+
+id,
+phone,
+otp:null,
+startTime:Date.now()
+
+};
+
+activeNumbers.unshift(item);
+
+saveStorage();
+
+numbersDiv.prepend(createBox(item));
+
+}
+
+}catch{}
+
+}
+
+function start(){
+
+fetchNumber();
+
+interval=setInterval(fetchNumber,1500);
+
+}
+
+updateUI();
+renderAll();
+
+</script>
+
 </body>
 </html>
