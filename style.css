@@ -1,0 +1,190 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #0f0f17;
+  color: #e0e0ff;
+  padding: 16px;
+  max-width: 620px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  color: #00d4ff;
+  font-size: 26px;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px #00d4ff44;
+}
+
+#toggleBtn {
+  width: 100%;
+  padding: 16px;
+  font-size: 19px;
+  font-weight: bold;
+  background: #00c853;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px #00c85344;
+  transition: all 0.3s;
+}
+
+#toggleBtn.off {
+  background: #ff5252;
+  box-shadow: 0 4px 12px #ff525244;
+}
+
+#status {
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  background: #1a1a2e;
+  border: 1px solid #333366;
+}
+
+#numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.numbox {
+  background: #171725;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  box-shadow: 0 2px 10px #00000066;
+  transition: all 0.3s;
+}
+
+.numbox:hover {
+  border-color: #00d4ff66;
+  box-shadow: 0 4px 18px #00d4ff22;
+}
+
+.numbox.copied-flash {
+  background: #4a1a1a !important;
+  border-color: #ff5252 !important;
+  box-shadow: 0 0 20px #ff525266 !important;
+  transition: all 0.4s;
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.phone10 {
+  flex: 1;
+  color: #a5d8ff;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.phone10:hover {
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.copy-number-btn, .copy-otp-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 80px;
+  transition: all 0.2s;
+}
+
+.copy-number-btn {
+  background: #2962ff;
+}
+
+.copy-number-btn.clicked-once {
+  background: #d81b60;
+}
+
+.copy-otp-btn {
+  background: #8e24aa;
+}
+
+.copy-otp-btn:hover {
+  opacity: 0.92;
+}
+
+.otp-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0d0d1f;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed #444488;
+}
+
+.otp {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #ffeb3b;
+  min-height: 34px;
+}
+
+.otp.success {
+  color: #00e676;
+  animation: glow 1.5s infinite alternate;
+}
+
+.waiting {
+  color: #ff9800;
+  font-style: italic;
+}
+
+.rotating::after {
+  content: "⟳";
+  display: inline-block;
+  margin-left: 8px;
+  animation: spin 1.2s linear infinite;
+  font-size: 18px;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 6px #00e67644; }
+  to   { text-shadow: 0 0 18px #00e676aa, 0 0 30px #00e67666; }
+}
+
+.timer {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 13px;
+  color: #ff6d00;
+  background: rgba(0,0,0,0.5);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+}
+
+
