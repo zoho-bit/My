@@ -135,11 +135,9 @@ const SERVICE="swr";
 const COUNTRY="22";
 const MAX_PRICE="80";
 
-const ACTIVE_KEY="active_numbers";
-const SAVED_KEY="saved_numbers";
+const STORAGE="numbers_data";
 
-let activeNumbers=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"[]");
-let savedNumbers=JSON.parse(localStorage.getItem(SAVED_KEY)||"[]");
+let numbersData=JSON.parse(localStorage.getItem(STORAGE)||"[]");
 
 let isOn=false;
 let interval;
@@ -148,10 +146,9 @@ const toggleBtn=document.getElementById("toggleBtn");
 const statusDiv=document.getElementById("status");
 const numbersDiv=document.getElementById("numbers");
 
-function saveStorage(){
+function save(){
 
-localStorage.setItem(ACTIVE_KEY,JSON.stringify(activeNumbers));
-localStorage.setItem(SAVED_KEY,JSON.stringify(savedNumbers));
+localStorage.setItem(STORAGE,JSON.stringify(numbersData));
 
 }
 
@@ -176,7 +173,7 @@ else clearInterval(interval);
 
 };
 
-function createBox(data,isPermanent=false){
+function createBox(data){
 
 const num=data.phone.slice(2);
 
@@ -203,7 +200,7 @@ ${data.otp||"Waiting for OTP..."}
 
 </div>
 
-${isPermanent?"":"<div class='timer'>05:00</div>"}
+${data.otp?"":"<div class='timer'>05:00</div>"}
 
 `;
 
@@ -221,13 +218,9 @@ box.classList.add("yellow");
 phone.onclick=copy;
 copyBtn.onclick=copy;
 
-if(!isPermanent){
+if(!data.otp){
 
 startTimer(box,data.startTime,data.id);
-
-}
-
-if(!data.otp){
 
 startOTP(box,data.id);
 
@@ -252,9 +245,9 @@ clearInterval(t);
 
 box.remove();
 
-activeNumbers=activeNumbers.filter(x=>x.id!==id);
+numbersData=numbersData.filter(x=>x.id!==id);
 
-saveStorage();
+save();
 
 return;
 
@@ -292,17 +285,13 @@ const code=t.split(":")[1];
 otpEl.textContent=code;
 otpEl.classList.add("success");
 
-const item=activeNumbers.find(x=>x.id==id);
+const item=numbersData.find(x=>x.id==id);
 
 if(item){
 
 item.otp=code;
 
-savedNumbers.unshift(item);
-
-activeNumbers=activeNumbers.filter(x=>x.id!=id);
-
-saveStorage();
+save();
 
 }
 
@@ -320,12 +309,8 @@ function renderAll(){
 
 numbersDiv.innerHTML="";
 
-savedNumbers.forEach(n=>{
-numbersDiv.appendChild(createBox(n,true));
-});
-
-activeNumbers.forEach(n=>{
-numbersDiv.appendChild(createBox(n,false));
+numbersData.forEach(n=>{
+numbersDiv.appendChild(createBox(n));
 });
 
 }
@@ -362,9 +347,9 @@ startTime:Date.now()
 
 };
 
-activeNumbers.unshift(item);
+numbersData.unshift(item);
 
-saveStorage();
+save();
 
 numbersDiv.prepend(createBox(item));
 
