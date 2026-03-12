@@ -136,8 +136,10 @@ const COUNTRY="22";
 const MAX_PRICE="80";
 
 const STORAGE="numbers_data";
+const COPIED_KEY="copied_numbers";
 
 let numbersData=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+let copiedNumbers=JSON.parse(localStorage.getItem(COPIED_KEY)||"[]");
 
 let isOn=false;
 let interval;
@@ -146,10 +148,12 @@ const toggleBtn=document.getElementById("toggleBtn");
 const statusDiv=document.getElementById("status");
 const numbersDiv=document.getElementById("numbers");
 
-function save(){
-
+function saveNumbers(){
 localStorage.setItem(STORAGE,JSON.stringify(numbersData));
+}
 
+function saveCopied(){
+localStorage.setItem(COPIED_KEY,JSON.stringify(copiedNumbers));
 }
 
 function updateUI(){
@@ -179,6 +183,10 @@ const num=data.phone.slice(2);
 
 const box=document.createElement("div");
 box.className="numbox";
+
+if(copiedNumbers.includes(data.id)){
+box.classList.add("yellow");
+}
 
 box.innerHTML=`
 
@@ -213,6 +221,11 @@ navigator.clipboard.writeText(num);
 
 box.classList.add("yellow");
 
+if(!copiedNumbers.includes(data.id)){
+copiedNumbers.push(data.id);
+saveCopied();
+}
+
 }
 
 phone.onclick=copy;
@@ -221,7 +234,6 @@ copyBtn.onclick=copy;
 if(!data.otp){
 
 startTimer(box,data.startTime,data.id);
-
 startOTP(box,data.id);
 
 }
@@ -246,8 +258,7 @@ clearInterval(t);
 box.remove();
 
 numbersData=numbersData.filter(x=>x.id!==id);
-
-save();
+saveNumbers();
 
 return;
 
@@ -290,8 +301,7 @@ const item=numbersData.find(x=>x.id==id);
 if(item){
 
 item.otp=code;
-
-save();
+saveNumbers();
 
 }
 
@@ -349,7 +359,7 @@ startTime:Date.now()
 
 numbersData.unshift(item);
 
-save();
+saveNumbers();
 
 numbersDiv.prepend(createBox(item));
 
