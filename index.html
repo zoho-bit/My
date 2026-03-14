@@ -26,15 +26,17 @@ width:100%;
 padding:16px;
 font-size:19px;
 font-weight:bold;
-background:#00c853;
 color:white;
 border:none;
 border-radius:12px;
 cursor:pointer;
 margin-bottom:16px;
+background:#00c853;
 }
 
-#toggleBtn.off{background:#ff5252;}
+#toggleBtn.off{
+background:#ff5252;
+}
 
 #status{
 padding:14px;
@@ -122,8 +124,8 @@ color:#ff6d00;
 
 <h1>HACKER PANEL 1.0</h1>
 
-<button id="toggleBtn">ON Karo</button>
-<div id="status">Off hai → ON dabao</div>
+<button id="toggleBtn">START</button>
+<div id="status">Panel Off</div>
 
 <div id="numbers"></div>
 
@@ -137,12 +139,14 @@ const MAX_PRICE="80";
 
 const STORAGE="numbers_data";
 const COPIED_KEY="copied_numbers";
+const PANEL_STATE="panel_state";
 
 let numbersData=JSON.parse(localStorage.getItem(STORAGE)||"[]");
 let copiedNumbers=JSON.parse(localStorage.getItem(COPIED_KEY)||"[]");
+let isOn=localStorage.getItem(PANEL_STATE)==="true";
 
-let isOn=false;
 let interval;
+let requestRunning=false;
 
 const toggleBtn=document.getElementById("toggleBtn");
 const statusDiv=document.getElementById("status");
@@ -156,13 +160,25 @@ function saveCopied(){
 localStorage.setItem(COPIED_KEY,JSON.stringify(copiedNumbers));
 }
 
+function saveState(){
+localStorage.setItem(PANEL_STATE,isOn);
+}
+
 function updateUI(){
 
-toggleBtn.textContent=isOn?"OFF Karo":"ON Karo";
+if(isOn){
 
-statusDiv.textContent=isOn
-?"Auto buy fast mode..."
-:"Off hai → ON dabao";
+toggleBtn.textContent="STOP";
+toggleBtn.classList.remove("off");
+statusDiv.textContent="Panel Running";
+
+}else{
+
+toggleBtn.textContent="START";
+toggleBtn.classList.add("off");
+statusDiv.textContent="Panel Off";
+
+}
 
 }
 
@@ -170,10 +186,14 @@ toggleBtn.onclick=()=>{
 
 isOn=!isOn;
 
+saveState();
 updateUI();
 
-if(isOn) start();
-else clearInterval(interval);
+if(isOn){
+start();
+}else{
+clearInterval(interval);
+}
 
 };
 
@@ -214,8 +234,10 @@ ${data.otp?"":"<div class='timer'>05:00</div>"}
 
 const phone=box.querySelector(".phone10");
 const copyBtn=box.querySelector(".copy-number-btn");
+const copyOtpBtn=box.querySelector(".copy-otp-btn");
+const otpEl=box.querySelector(".otp");
 
-function copy(){
+function copyNumber(){
 
 navigator.clipboard.writeText(num);
 
@@ -228,13 +250,21 @@ saveCopied();
 
 }
 
-phone.onclick=copy;
-copyBtn.onclick=copy;
+phone.onclick=copyNumber;
+copyBtn.onclick=copyNumber;
+
+copyOtpBtn.onclick=()=>{
+
+if(data.otp){
+navigator.clipboard.writeText(data.otp);
+}
+
+};
 
 if(!data.otp){
 
 startTimer(box,data.startTime,data.id);
-startOTP(box,data.id);
+startOTP(box,data.id,otpEl);
 
 }
 
@@ -271,11 +301,11 @@ timer.textContent=`${m}:${s}`;
 
 },1000);
 
+box.timerInterval=t;
+
 }
 
-function startOTP(box,id){
-
-const otpEl=box.querySelector(".otp");
+function startOTP(box,id,otpEl){
 
 const poll=setInterval(async()=>{
 
@@ -296,16 +326,20 @@ const code=t.split(":")[1];
 otpEl.textContent=code;
 otpEl.classList.add("success");
 
+navigator.clipboard.writeText(code);
+
 const item=numbersData.find(x=>x.id==id);
 
 if(item){
-
 item.otp=code;
 saveNumbers();
-
 }
 
 clearInterval(poll);
+
+if(box.timerInterval){
+clearInterval(box.timerInterval);
+}
 
 }
 
@@ -328,6 +362,9 @@ numbersDiv.appendChild(createBox(n));
 async function fetchNumber(){
 
 if(!isOn) return;
+if(requestRunning) return;
+
+requestRunning=true;
 
 try{
 
@@ -348,13 +385,16 @@ if(txt.startsWith("ACCESS_NUMBER")){
 
 const[,id,phone]=txt.split(":");
 
-const item={
+if(numbersData.find(x=>x.id===id)){
+requestRunning=false;
+return;
+}
 
+const item={
 id,
 phone,
 otp:null,
 startTime:Date.now()
-
 };
 
 numbersData.unshift(item);
@@ -367,18 +407,24 @@ numbersDiv.prepend(createBox(item));
 
 }catch{}
 
+requestRunning=false;
+
 }
 
 function start(){
 
 fetchNumber();
 
-interval=setInterval(fetchNumber,1500);
+interval=setInterval(fetchNumber,400);
 
 }
 
 updateUI();
 renderAll();
+
+if(isOn){
+start();
+}
 
 </script>
 
