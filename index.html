@@ -3,430 +3,256 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HACKER PANEL 1.0</title>
-
+<title>HACKER PANEL 2.0</title>
 <style>
-
-body{
-font-family:Segoe UI,Arial;
-background:#0f0f17;
-color:#e0e0ff;
-padding:16px;
-max-width:620px;
-margin:auto;
-}
-
-h1{
-text-align:center;
-color:#00d4ff;
-}
-
-#toggleBtn{
-width:100%;
-padding:16px;
-font-size:19px;
-font-weight:bold;
-color:white;
-border:none;
-border-radius:12px;
-cursor:pointer;
-margin-bottom:16px;
-background:#00c853;
-}
-
-#toggleBtn.off{
-background:#ff5252;
-}
-
-#status{
-padding:14px;
-margin-bottom:16px;
-border-radius:10px;
-text-align:center;
-background:#1a1a2e;
-}
-
-#numbers{
-display:flex;
-flex-direction:column;
-gap:14px;
-}
-
-.numbox{
-background:#171725;
-padding:14px;
-border-radius:12px;
-border:1px solid #2a2a4a;
-position:relative;
-}
-
-.numbox.yellow{
-background:#4a4200;
-border-color:#ffd600;
-}
-
-.top-row{
-display:flex;
-gap:12px;
-font-size:19px;
-font-weight:bold;
-}
-
-.phone10{
-flex:1;
-cursor:pointer;
-color:#a5d8ff;
-}
-
-.copy-number-btn,.copy-otp-btn{
-padding:8px 14px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-color:white;
-}
-
+body{font-family:Segoe UI,Arial;background:#0f0f17;color:#e0e0ff;padding:16px;max-width:620px;margin:auto;}
+h1{text-align:center;color:#00d4ff;}
+#toggleBtn{width:100%;padding:16px;font-size:19px;font-weight:bold;color:white;border:none;border-radius:12px;cursor:pointer;margin-bottom:16px;background:#00c853;}
+#toggleBtn.off{background:#ff5252;}
+#status{padding:14px;margin-bottom:16px;border-radius:10px;text-align:center;background:#1a1a2e;}
+#numbers{display:flex;flex-direction:column;gap:14px;}
+.numbox{background:#171725;padding:14px;border-radius:12px;border:1px solid #2a2a4a;position:relative;}
+.numbox.yellow{background:#4a4200;border-color:#ffd600;}
+.top-row{display:flex;gap:12px;font-size:19px;font-weight:bold;align-items:center;}
+.phone10{flex:1;cursor:pointer;color:#a5d8ff;}
+.copy-number-btn,.copy-otp-btn{padding:8px 14px;border:none;border-radius:8px;cursor:pointer;color:white;}
 .copy-number-btn{background:#2962ff;}
 .copy-otp-btn{background:#8e24aa;}
-
-.otp-area{
-display:flex;
-gap:12px;
-background:#0d0d1f;
-padding:10px;
-border-radius:8px;
-}
-
-.otp{
-flex:1;
-text-align:center;
-font-size:18px;
-letter-spacing:2px;
-color:#ffeb3b;
-}
-
-.otp.success{
-color:#00e676;
-}
-
-.timer{
-position:absolute;
-top:8px;
-right:12px;
-font-size:13px;
-color:#ff6d00;
-}
-
+.otp-area{display:flex;gap:12px;background:#0d0d1f;padding:10px;border-radius:8px;margin-top:8px;}
+.otp{flex:1;text-align:center;font-size:18px;letter-spacing:2px;color:#ffeb3b;}
+.otp.success{color:#00e676;}
+.timer{position:absolute;top:8px;right:12px;font-size:13px;color:#ff6d00;font-weight:bold;}
+.api-tag{position:absolute;top:8px;left:12px;font-size:11px;padding:2px 6px;border-radius:4px;color:white;}
+.api1{background:#00695c;}
+.api2{background:#d81b60;}
 </style>
 </head>
-
 <body>
-
-<h1>HACKER PANEL 1.0</h1>
-
+<h1>HACKER PANEL 2.0</h1>
 <button id="toggleBtn">START</button>
 <div id="status">Panel Off</div>
-
 <div id="numbers"></div>
 
 <script>
+const API1 = "https://vertul.sawanpoint0000.workers.dev";  
+const API2 = "https://vertul.sawanenter7209.workers.dev/";         
 
-const API="https://vertula.sawanpoint0000.workers.dev";
+const SERVICE  = "swr";
+const COUNTRY  = "22";
+const MAX_PRICE = "80";
 
-const SERVICE="swr";
-const COUNTRY="22";
-const MAX_PRICE="80";
+const STORAGE       = "numbers_data";
+const COPIED_KEY    = "copied_numbers";
+const PANEL_STATE   = "panel_state";
 
-const STORAGE="numbers_data";
-const COPIED_KEY="copied_numbers";
-const PANEL_STATE="panel_state";
-
-let numbersData=JSON.parse(localStorage.getItem(STORAGE)||"[]");
-let copiedNumbers=JSON.parse(localStorage.getItem(COPIED_KEY)||"[]");
-let isOn=localStorage.getItem(PANEL_STATE)==="true";
+let numbersData   = JSON.parse(localStorage.getItem(STORAGE) || "[]");
+let copiedNumbers = JSON.parse(localStorage.getItem(COPIED_KEY) || "[]");
+let isOn          = localStorage.getItem(PANEL_STATE) === "true";
 
 let interval;
-let requestRunning=false;
+let requestRunning = false;
 
-const toggleBtn=document.getElementById("toggleBtn");
-const statusDiv=document.getElementById("status");
-const numbersDiv=document.getElementById("numbers");
+const toggleBtn = document.getElementById("toggleBtn");
+const statusDiv = document.getElementById("status");
+const numbersDiv = document.getElementById("numbers");
 
-function saveNumbers(){
-localStorage.setItem(STORAGE,JSON.stringify(numbersData));
+function saveNumbers() { localStorage.setItem(STORAGE, JSON.stringify(numbersData)); }
+function saveCopied()  { localStorage.setItem(COPIED_KEY, JSON.stringify(copiedNumbers)); }
+function saveState()   { localStorage.setItem(PANEL_STATE, isOn); }
+
+function updateUI() {
+    if (isOn) {
+        toggleBtn.textContent = "STOP";
+        toggleBtn.classList.remove("off");
+        statusDiv.textContent = "Panel Running";
+    } else {
+        toggleBtn.textContent = "START";
+        toggleBtn.classList.add("off");
+        statusDiv.textContent = "Panel Off";
+    }
 }
 
-function saveCopied(){
-localStorage.setItem(COPIED_KEY,JSON.stringify(copiedNumbers));
-}
-
-function saveState(){
-localStorage.setItem(PANEL_STATE,isOn);
-}
-
-function updateUI(){
-
-if(isOn){
-
-toggleBtn.textContent="STOP";
-toggleBtn.classList.remove("off");
-statusDiv.textContent="Panel Running";
-
-}else{
-
-toggleBtn.textContent="START";
-toggleBtn.classList.add("off");
-statusDiv.textContent="Panel Off";
-
-}
-
-}
-
-toggleBtn.onclick=()=>{
-
-isOn=!isOn;
-
-saveState();
-updateUI();
-
-if(isOn){
-start();
-}else{
-clearInterval(interval);
-}
-
+toggleBtn.onclick = () => {
+    isOn = !isOn;
+    saveState();
+    updateUI();
+    if (isOn) start();
+    else clearInterval(interval);
 };
 
-function createBox(data){
+function createBox(data) {
+    const num = data.phone.slice(2);
+    const box = document.createElement("div");
+    box.className = "numbox";
+    if (copiedNumbers.includes(data.id)) box.classList.add("yellow");
 
-const num=data.phone.slice(2);
+    const apiUsed = data.api || "api1";
 
-const box=document.createElement("div");
-box.className="numbox";
+    box.innerHTML = `
+        <div class="top-row">
+            <div class="phone10">${num}</div>
+            <button class="copy-number-btn">Copy No.</button>
+        </div>
+        <div class="otp-area">
+            <div class="otp ${data.otp ? 'success' : ''}">
+                ${data.otp || "Waiting for OTP..."}
+            </div>
+            <button class="copy-otp-btn">Copy OTP</button>
+        </div>
+        <div class="timer">15:00</div>
+        <div class="api-tag ${apiUsed === 'api1' ? 'api1' : 'api2'}">
+            ${apiUsed.toUpperCase()}
+        </div>
+    `;
 
-if(copiedNumbers.includes(data.id)){
-box.classList.add("yellow");
+    const phoneEl    = box.querySelector(".phone10");
+    const copyNumBtn = box.querySelector(".copy-number-btn");
+    const copyOtpBtn = box.querySelector(".copy-otp-btn");
+    const otpEl      = box.querySelector(".otp");
+    const timerEl    = box.querySelector(".timer");
+
+    function copyNumber() {
+        navigator.clipboard.writeText(num);
+        box.classList.add("yellow");
+        if (!copiedNumbers.includes(data.id)) {
+            copiedNumbers.push(data.id);
+            saveCopied();
+        }
+    }
+
+    phoneEl.onclick = copyNumBtn.onclick = copyNumber;
+
+    copyOtpBtn.onclick = () => {
+        if (data.otp) navigator.clipboard.writeText(data.otp);
+    };
+
+    // 15 मिनट टाइमर (OTP आए या न आए)
+    start15MinTimer(box, data.startTime, data.id, timerEl);
+
+    if (!data.otp) {
+        startOTPPolling(box, data.id, otpEl, data.api);
+    }
+
+    return box;
 }
 
-box.innerHTML=`
+function start15MinTimer(box, startTime, id, timerEl) {
+    const start = startTime || Date.now();
+    const t = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        let remain = 900 - elapsed; // 15 * 60 = 900
 
-<div class="top-row">
+        if (remain <= 0) {
+            clearInterval(t);
+            box.remove();
+            numbersData = numbersData.filter(x => x.id !== id);
+            saveNumbers();
+            return;
+        }
 
-<div class="phone10">${num}</div>
+        const m = String(Math.floor(remain / 60)).padStart(2, "0");
+        const s = String(remain % 60).padStart(2, "0");
+        timerEl.textContent = `${m}:${s}`;
+    }, 1000);
 
-<button class="copy-number-btn">Copy No.</button>
-
-</div>
-
-<div class="otp-area">
-
-<div class="otp ${data.otp?'success':''}">
-${data.otp||"Waiting for OTP..."}
-</div>
-
-<button class="copy-otp-btn">Copy OTP</button>
-
-</div>
-
-${data.otp?"":"<div class='timer'>05:00</div>"}
-
-`;
-
-const phone=box.querySelector(".phone10");
-const copyBtn=box.querySelector(".copy-number-btn");
-const copyOtpBtn=box.querySelector(".copy-otp-btn");
-const otpEl=box.querySelector(".otp");
-
-function copyNumber(){
-
-navigator.clipboard.writeText(num);
-
-box.classList.add("yellow");
-
-if(!copiedNumbers.includes(data.id)){
-copiedNumbers.push(data.id);
-saveCopied();
+    box.longTimer = t;
 }
 
+async function fetchFromAPI(apiUrl, apiName) {
+    if (!apiUrl) return null;
+
+    try {
+        const params = new URLSearchParams({
+            action: "getNumber",
+            service: SERVICE,
+            country: COUNTRY,
+            maxPrice: MAX_PRICE
+        });
+
+        const res = await fetch(apiUrl + "?" + params);
+        const text = (await res.text()).trim();
+
+        if (text.startsWith("ACCESS_NUMBER")) {
+            const [, id, phone] = text.split(":");
+            if (numbersData.some(x => x.id === id)) return null;
+
+            return {
+                id,
+                phone,
+                otp: null,
+                startTime: Date.now(),
+                api: apiName
+            };
+        }
+    } catch (e) {}
+    return null;
 }
 
-phone.onclick=copyNumber;
-copyBtn.onclick=copyNumber;
+async function fetchNumber() {
+    if (!isOn || requestRunning) return;
+    requestRunning = true;
 
-copyOtpBtn.onclick=()=>{
+    let item = null;
 
-if(data.otp){
-navigator.clipboard.writeText(data.otp);
+    // पहले API1 ट्राई
+    item = await fetchFromAPI(API1, "api1");
+
+    // अगर API1 से नहीं मिला तो API2
+    if (!item && API2) {
+        item = await fetchFromAPI(API2, "api2");
+    }
+
+    if (item) {
+        numbersData.unshift(item);
+        saveNumbers();
+        numbersDiv.prepend(createBox(item));
+    }
+
+    requestRunning = false;
 }
 
-};
+function startOTPPolling(box, id, otpEl, apiUsed) {
+    const apiUrl = apiUsed === "api2" ? API2 : API1;
 
-if(!data.otp){
+    const poll = setInterval(async () => {
+        try {
+            const q = new URLSearchParams({ action: "getStatus", id });
+            const r = await fetch(apiUrl + "?" + q);
+            const t = (await r.text()).trim();
 
-startTimer(box,data.startTime,data.id);
-startOTP(box,data.id,otpEl);
+            if (t.startsWith("STATUS_OK")) {
+                const code = t.split(":")[1];
+                otpEl.textContent = code;
+                otpEl.classList.add("success");
+                navigator.clipboard.writeText(code);
 
+                const item = numbersData.find(x => x.id === id);
+                if (item) {
+                    item.otp = code;
+                    saveNumbers();
+                }
+
+                clearInterval(poll);
+            }
+        } catch (e) {}
+    }, 2000);
+
+    box.pollInterval = poll;
 }
 
-return box;
-
+function renderAll() {
+    numbersDiv.innerHTML = "";
+    numbersData.forEach(n => numbersDiv.appendChild(createBox(n)));
 }
 
-function startTimer(box,start,id){
-
-const timer=box.querySelector(".timer");
-
-const t=setInterval(()=>{
-
-const elapsed=Math.floor((Date.now()-start)/1000);
-let remain=300-elapsed;
-
-if(remain<=0){
-
-clearInterval(t);
-
-box.remove();
-
-numbersData=numbersData.filter(x=>x.id!==id);
-saveNumbers();
-
-return;
-
-}
-
-const m=String(Math.floor(remain/60)).padStart(2,"0");
-const s=String(remain%60).padStart(2,"0");
-
-timer.textContent=`${m}:${s}`;
-
-},1000);
-
-box.timerInterval=t;
-
-}
-
-function startOTP(box,id,otpEl){
-
-const poll=setInterval(async()=>{
-
-try{
-
-const q=new URLSearchParams({
-action:"getStatus",
-id
-});
-
-const r=await fetch(API+"?"+q);
-const t=(await r.text()).trim();
-
-if(t.startsWith("STATUS_OK")){
-
-const code=t.split(":")[1];
-
-otpEl.textContent=code;
-otpEl.classList.add("success");
-
-navigator.clipboard.writeText(code);
-
-const item=numbersData.find(x=>x.id==id);
-
-if(item){
-item.otp=code;
-saveNumbers();
-}
-
-clearInterval(poll);
-
-if(box.timerInterval){
-clearInterval(box.timerInterval);
-}
-
-}
-
-}catch{}
-
-},2000);
-
-}
-
-function renderAll(){
-
-numbersDiv.innerHTML="";
-
-numbersData.forEach(n=>{
-numbersDiv.appendChild(createBox(n));
-});
-
-}
-
-async function fetchNumber(){
-
-if(!isOn) return;
-if(requestRunning) return;
-
-requestRunning=true;
-
-try{
-
-const p=new URLSearchParams({
-
-action:"getNumber",
-service:SERVICE,
-country:COUNTRY,
-maxPrice:MAX_PRICE
-
-});
-
-const r=await fetch(API+"?"+p);
-
-const txt=(await r.text()).trim();
-
-if(txt.startsWith("ACCESS_NUMBER")){
-
-const[,id,phone]=txt.split(":");
-
-if(numbersData.find(x=>x.id===id)){
-requestRunning=false;
-return;
-}
-
-const item={
-id,
-phone,
-otp:null,
-startTime:Date.now()
-};
-
-numbersData.unshift(item);
-
-saveNumbers();
-
-numbersDiv.prepend(createBox(item));
-
-}
-
-}catch{}
-
-requestRunning=false;
-
-}
-
-function start(){
-
-fetchNumber();
-
-interval=setInterval(fetchNumber,400);
-
+function start() {
+    fetchNumber();
+    interval = setInterval(fetchNumber, 400); // हर ~0.4 सेकंड में ट्राई
 }
 
 updateUI();
 renderAll();
-
-if(isOn){
-start();
-}
-
+if (isOn) start();
 </script>
-
 </body>
 </html>
